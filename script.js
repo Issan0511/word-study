@@ -126,8 +126,8 @@ function shuffleWords() {
 function correct() {
   toggleButtons(true);
   previousWords.push(JSON.parse(JSON.stringify(currentWords[0]))); // 正解とされた単語をpreviousWordsに追加
+  allWords.push(currentWords[0]);
   correctWords.push(currentWords.shift()); 
-  allWords.push(currentWords.shift());
   currentIndex++; // currentIndexを更新
   showWord(); 
 }
@@ -135,8 +135,8 @@ function correct() {
 // 間違いボタンが押されたとき
 function incorrect() {
   toggleButtons(true);
+  allWords.push(currentWords[0]);
   wrongWords.push(currentWords.shift());
-  allWords.push(currentWords.shift());
   console.log(wrongWords)
   currentIndex++; // currentIndexを更新
   showWord();
