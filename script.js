@@ -259,14 +259,18 @@ function toggleButtons() {
       
   }
 }
-
-// カードを表示する関数
-function displayCards(wordList) {
-  const cardContainer = document.getElementById('cardContainer');
+function showcard(){
   cardContainer.innerHTML = '';  // Clear the container
+  displayCards(savedcorrectWords,'#81a9ff');
+  displayCards(savedWrongWords,'#ff4a4a');
+}
+// カードを表示する関数
+function displayCards(wordList, bgColor) {
+  const cardContainer = document.getElementById('cardContainer');
   wordList.forEach((item) => {
     const card1 = document.createElement('div');
     card1.className = 'card1';
+    card1.style.backgroundColor = bgColor;  // Set the background color
 
     const container = document.createElement('div');
     container.className = 'container1';
