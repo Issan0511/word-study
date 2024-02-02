@@ -208,6 +208,7 @@ function testCompleted() {
   if (canDownload) {
   // ダウンロードボタンを表示
       document.getElementById("downloadButton").style.display = "block";  // フラグをfalseに設定
+      document.getElementById("showcardButton").style.display = "block";  // フラグをfalseに設定
   }
   // メッセージ表示
   alert('単語テストが一通り終わりました。間違えた単語を再表示します');
@@ -261,8 +262,9 @@ function toggleButtons() {
 }
 function showcard(){
   cardContainer.innerHTML = '';  // Clear the container
+  displayCards(savedWrongWords,'#ff9090');
   displayCards(savedcorrectWords,'#81a9ff');
-  displayCards(savedWrongWords,'#ff4a4a');
+  document.getElementById("showcardButton").style.display = "none";  
 }
 // カードを表示する関数
 function displayCards(wordList, bgColor) {
