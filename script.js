@@ -266,10 +266,40 @@ function showcard(){
   displayCards(savedcorrectWords,'#81a9ff');
   document.getElementById("showcardButton").style.display = "none";  
 }
+
+
+
+
+
+
 // カードを表示する関数
 function displayCards(wordList, bgColor) {
   const cardContainer = document.getElementById('cardContainer');
-  wordList.forEach((item) => {
+  let autoPlayInterval;
+
+  // 自動再生ボタンを作成
+  const autoPlayButton = document.createElement('button');
+  autoPlayButton.textContent = '自動再生';
+  autoPlayButton.style.position = 'fixed';  // ボタンを画面上部に固定
+  autoPlayButton.style.top = '0';
+  autoPlayButton.addEventListener('click', () => {
+    let cardIndex = 0;
+    autoPlayInterval = setInterval(() => {
+      const nextCard = document.getElementById('card' + cardIndex);
+      if (nextCard) {
+        const cardHeight = nextCard.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        const scrollPosition = nextCard.offsetTop - (viewportHeight - cardHeight) / 2;
+        window.scrollTo({top: scrollPosition, behavior: "smooth"});
+        cardIndex++;
+      } else {
+        clearInterval(autoPlayInterval);  // 全てのカードを表示したら自動再生を停止
+      }
+    }, 3000);  // 3秒おきにスクロール
+  });
+  document.body.appendChild(autoPlayButton);  // ボタンを追加
+
+  wordList.forEach((item, index) => {
     const card1 = document.createElement('div');
     card1.className = 'card1';
     card1.style.backgroundColor = bgColor;  // Set the background color
@@ -289,5 +319,34 @@ function displayCards(wordList, bgColor) {
     container.appendChild(answerDisplay);
     card1.appendChild(container);
     cardContainer.appendChild(card1);
+
+    // カードにIDを追加
+    card1.id = 'card' + index;
+
+    // カードにクリックイベントを追加
+    card1.addEventListener('click', (e) => {
+      clearInterval(autoPlayInterval);  // カードがクリックされたら自動再生を停止
+      const clickedY = e.clientY;
+      const cardRect = card1.getBoundingClientRect();
+      const cardHeight = cardRect.height;
+      const viewportHeight = window.innerHeight;
+      if (clickedY - cardRect.top < cardHeight / 2) {
+        // カードの上半分がクリックされた場合
+        const previousCardIndex = index - 1;
+        if (previousCardIndex >= 0) {
+          const previousCard = document.getElementById('card' + previousCardIndex);
+          const scrollPosition = previousCard.offsetTop - (viewportHeight - cardHeight) / 2;
+          window.scrollTo({top: scrollPosition, behavior: "smooth"});
+        }
+      } else {
+        // カードの下半分がクリックされた場合
+        const nextCardIndex = index + 1;
+        if (nextCardIndex < wordList.length) {
+          const nextCard = document.getElementById('card' + nextCardIndex);
+          const scrollPosition = nextCard.offsetTop - (viewportHeight - cardHeight) / 2;
+          window.scrollTo({top: scrollPosition, behavior: "smooth"});
+        }
+      }
+    });
   });
 }
