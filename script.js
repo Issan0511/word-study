@@ -262,7 +262,7 @@ function toggleButtons() {
 }
 function showcard(){
   cardContainer.innerHTML = '';  // Clear the container
-  displayCards(savedWrongWords,'#ff9090');
+  displayWrongCards(savedWrongWords,'#ff9090');
   displayCards(savedcorrectWords,'#81a9ff');
   document.getElementById("showcardButton").style.display = "none";  
 }
@@ -272,32 +272,68 @@ function showcard(){
 
 
 
-// カードを表示する関数
-function displayCards(wordList, bgColor) {
+function displayWrongCards(wordList, bgColor) {
   const cardContainer = document.getElementById('cardContainer');
   let autoPlayInterval;
+  let autoPlaying = false;
+  let cardIndex = 0; // カードのインデックスを変数にする
 
-  // 自動再生ボタンを作成
-  const autoPlayButton = document.createElement('button');
-  autoPlayButton.textContent = '自動再生';
-  autoPlayButton.style.position = 'fixed';  // ボタンを画面上部に固定
-  autoPlayButton.style.top = '0';
-  autoPlayButton.addEventListener('click', () => {
-    let cardIndex = 0;
-    autoPlayInterval = setInterval(() => {
-      const nextCard = document.getElementById('card' + cardIndex);
-      if (nextCard) {
-        const cardHeight = nextCard.offsetHeight;
-        const viewportHeight = window.innerHeight;
-        const scrollPosition = nextCard.offsetTop - (viewportHeight - cardHeight) / 2;
-        window.scrollTo({top: scrollPosition, behavior: "smooth"});
-        cardIndex++;
-      } else {
-        clearInterval(autoPlayInterval);  // 全てのカードを表示したら自動再生を停止
-      }
-    }, 3000);  // 3秒おきにスクロール
-  });
-  document.body.appendChild(autoPlayButton);  // ボタンを追加
+  // 自動再生ボタンのtextContentを変更する関数を定義する
+  const changeAutoPlayButtonText = () => {
+    // 全てのカードのautoPlayButtonを取得する
+    const autoPlayButtons = document.querySelectorAll(".autoPlayButton");
+    // autoPlayButtonのtextContentをautoPlayingの値に応じて変更する
+    if (autoPlaying) {
+      autoPlayButtons.forEach(button => {
+        button.textContent = "■";
+      });
+    } else {
+      autoPlayButtons.forEach(button => {
+        button.textContent = "▶";
+      });
+    }
+  };
+
+  // 自動再生ボタンのclickイベントリスナーを定義する
+  const autoPlayButtonClickHandler = (e) => { 
+    // イベントの伝播を止める
+    e.stopPropagation();
+    // autoPlayingの値を反転させる
+    autoPlaying = !autoPlaying;
+    // autoPlayButtonのtextContentを変更する
+    changeAutoPlayButtonText();
+    // autoPlayingの値に応じて自動再生を開始または停止する
+    if (autoPlaying) {
+      // 自動再生を開始する
+      // クリックされた要素を取得する
+      const clickedElement = e.target;
+      // クリックされた要素のid属性からカードの番号を取得する
+      const cardNumber = clickedElement.id.replace("button", "");
+      // カードの番号をautoPlay関数に渡して自動再生を開始する
+      autoPlay(cardNumber);
+    } else {
+      // 自動再生を停止する
+      clearTimeout(autoPlayInterval);
+    }
+  };
+
+  // 自動再生の処理をする関数を定義する
+  const autoPlay = (cardIndex) => { 
+    const nextCard = document.getElementById('card' + cardIndex);
+    if (nextCard) {
+      const cardHeight = nextCard.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const scrollPosition = nextCard.offsetTop - (viewportHeight - cardHeight) / 2;
+      window.scrollTo({top: scrollPosition, behavior: "smooth"});
+      cardIndex++; 
+      autoPlayInterval = setTimeout(() => {
+        autoPlay(cardIndex); 
+      }, 3000);
+    } else {
+      autoPlaying = false;
+      changeAutoPlayButtonText();
+    }
+  };
 
   wordList.forEach((item, index) => {
     const card1 = document.createElement('div');
@@ -323,9 +359,88 @@ function displayCards(wordList, bgColor) {
     // カードにIDを追加
     card1.id = 'card' + index;
 
+    // 自動再生ボタンを作成
+    const autoPlayButton = document.createElement('button');
+    // autoPlayButtonにクラス名を追加
+    autoPlayButton.className = "autoPlayButton";
+    // autoPlayButtonのtextContentを初期化する
+    changeAutoPlayButtonText();
+    // ボタンのpositionをabsoluteに変更する
+    autoPlayButton.style.position = 'absolute';  // ボタンをカードの右端に固定する
+    // ボタンのrightを0にする
+    autoPlayButton.style.right = '0';  // ボタンをカードの右端に移動する
+    autoPlayButton.style.bottom = '0';
+    autoPlayButton.style.backgroundColor = 'transparent';  // 透明な灰色に設定
+    // autoPlayButtonにclickイベントリスナーを登録する
+    autoPlayButton.addEventListener('click', autoPlayButtonClickHandler);
+    card1.appendChild(autoPlayButton);  // ボタンをカードに追加
+    autoPlayButton.id= "button"+ index;
     // カードにクリックイベントを追加
     card1.addEventListener('click', (e) => {
-      clearInterval(autoPlayInterval);  // カードがクリックされたら自動再生を停止
+      const clickedY = e.clientY;
+      const cardRect = card1.getBoundingClientRect();
+      const cardHeight = cardRect.height;
+      const viewportHeight = window.innerHeight;
+
+      // 自動再生を停止する処理を追加
+      if (autoPlaying) {
+        // autoPlayingの値をfalseにする
+        autoPlaying = false;
+        // setTimeoutをキャンセルする
+        clearTimeout(autoPlayInterval);
+        // ボタンのテキストを▶に変更する
+        changeAutoPlayButtonText();
+      } else {
+        console.log(index);
+        if (clickedY - cardRect.top < cardHeight / 2) {
+          // カードの上半分がクリックされた場合
+          const previousCardIndex = index - 1;
+          if (previousCardIndex >= 0) {
+            const previousCard = document.getElementById('card' + previousCardIndex);
+            const scrollPosition = previousCard.offsetTop - (viewportHeight - cardHeight) / 2;
+            window.scrollTo({top: scrollPosition, behavior: "smooth"});
+          }
+        } else {
+          // カードの下半分がクリックされた場合
+          const nextCardIndex = index + 1;
+          if (nextCardIndex < wordList.length) {
+            const nextCard = document.getElementById('card' + nextCardIndex);
+            const scrollPosition = nextCard.offsetTop - (viewportHeight - cardHeight) / 2;
+            window.scrollTo({top: scrollPosition, behavior: "smooth"});
+          }
+        }
+      }
+    });
+  });
+}
+
+// カードを表示する関数
+function displayCards(wordList, bgColor) {
+  const cardContainer = document.getElementById('cardContainer');
+  wordList.forEach((item,index) => {
+    const card1 = document.createElement('div');
+    card1.className = 'card1';
+    card1.style.backgroundColor = bgColor;  // Set the background color
+
+    const container = document.createElement('div');
+    container.className = 'container1';
+
+    const wordDisplay = document.createElement('div');
+    wordDisplay.id = 'wordDisplay1';
+    wordDisplay.textContent = item.word === undefined ? '' : item.word;
+
+    const answerDisplay = document.createElement('div');
+    answerDisplay.id = 'answerDisplay1';
+    answerDisplay.textContent = item.answer;
+    // カードにIDを追加
+    card1.id = 'card' + index;
+    container.appendChild(wordDisplay);
+    container.appendChild(answerDisplay);
+    card1.appendChild(container);
+    cardContainer.appendChild(card1);
+    // カードにクリックイベントを追加
+    card1.addEventListener('click', (e) => {
+
       const clickedY = e.clientY;
       const cardRect = card1.getBoundingClientRect();
       const cardHeight = cardRect.height;
@@ -348,5 +463,6 @@ function displayCards(wordList, bgColor) {
         }
       }
     });
+
   });
 }
