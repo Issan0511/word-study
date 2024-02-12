@@ -1,7 +1,7 @@
 let currentWords = [];
 let wrongWords = [];
 let correctWords =[];
-let canDownload = true;
+let istheFirsttime = true;
 let savedWrongWords = [];
 let previousWords = []; 
 let currentAnswer = [];
@@ -144,8 +144,15 @@ function incorrect() {
 
 function restart() {
   console.log(wrongWords)
-  savedWrongWords = wrongWords.slice(); // 
-  savedcorrectWords = correctWords.slice();
+  if(istheFirsttime==true){
+    console.log(istheFirsttime);
+    savedWrongWords = wrongWords.slice(); // 
+    savedcorrectWords = correctWords.slice();
+    istheFirsttime=false;
+  }
+  console.log(istheFirsttime);
+
+
   currentWords = wrongWords.slice(); // 間違えた単語をコピー
   wrongWords = []; // 間違えた単語リストをリセット
   correctWords = [];
@@ -240,7 +247,7 @@ function exportToExcel() {
   }
   
   // ここでExcelファイルとして出力
-  XLSX.writeFile(new_workbook, 'Words.xlsx');
+  XLSX.writeFile(new_workbook, 'Result.xlsx');
   console.log(canDownload);
 }
 
@@ -433,7 +440,7 @@ function displayCards(wordList, bgColor) {
     answerDisplay.id = 'answerDisplay1';
     answerDisplay.textContent = item.answer;
     // カードにIDを追加
-    card1.id = 'card' + index;
+    card1.id = 'cards' + index;
     container.appendChild(wordDisplay);
     container.appendChild(answerDisplay);
     card1.appendChild(container);
@@ -449,7 +456,7 @@ function displayCards(wordList, bgColor) {
         // カードの上半分がクリックされた場合
         const previousCardIndex = index - 1;
         if (previousCardIndex >= 0) {
-          const previousCard = document.getElementById('card' + previousCardIndex);
+          const previousCard = document.getElementById('cards' + previousCardIndex);
           const scrollPosition = previousCard.offsetTop - (viewportHeight - cardHeight) / 2;
           window.scrollTo({top: scrollPosition, behavior: "smooth"});
         }
@@ -457,7 +464,7 @@ function displayCards(wordList, bgColor) {
         // カードの下半分がクリックされた場合
         const nextCardIndex = index + 1;
         if (nextCardIndex < wordList.length) {
-          const nextCard = document.getElementById('card' + nextCardIndex);
+          const nextCard = document.getElementById('cards' + nextCardIndex);
           const scrollPosition = nextCard.offsetTop - (viewportHeight - cardHeight) / 2;
           window.scrollTo({top: scrollPosition, behavior: "smooth"});
         }
