@@ -11,8 +11,12 @@ let currentIndex = 0; // 現在の単語のインデックス
 let savedcorrectWords = [];
 let unknownWords = [];
 let allWords = [];
+function beforeUnload(event){
+  event.preventDefault();
+  event.returnValue = 'Check';
+}
 
-document.getElementById('excelFileInput').addEventListener('change', async function(e){
+window.onbeforeunload = beforeUnload;document.getElementById('excelFileInput').addEventListener('change', async function(e){
   let mergedWordList = [];
   
   var files = e.target.files;
